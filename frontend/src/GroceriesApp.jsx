@@ -1,23 +1,13 @@
 import InventoryCard from "./InventoryCard";
 import CartList from "./CartList";
-import { products } from "./data/products";
-import { useState, useEffect } from "react";
-import axios from "axios"
 import InventoryForm from "./InventoryForm";
-import product from "../../backend/models/product";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { v4 as uuidv4 } from 'uuid'; // Import uuid for generating unique IDs
 
 export default function GroceriesApp() {
-  //   const [counter, setCounter] = useState(1);
-  //   const addCounter = () => {
-  //     setCounter((prevCounter) => prevCounter + 1);
-  //   };
-
-  //   const subtractCounter = () => {
-  //     setCounter((prevCounter) => prevCounter - 1);
-  //   };
-
   const [cartList, setCartList] = useState([]);
-  const [products, setProduct] = useState([]);
+  const [productsList, setProductsList] = useState([]);
   const [formData, setFormData] = useState({
     id: "",
     productName: "",
@@ -25,84 +15,84 @@ export default function GroceriesApp() {
     quantity: "",
     image: "",
     price: "",
-
   });
+  const [responseData, setResponseData] = useState(""); // Initialize responseData state
 
-  const [responseData, setResponseData] = useState(" ");
-
-  // useEffect
   useEffect(() => {
     handleGetProducts();
-  }, [])
-// Get Products
+  }, [responseData]);
+
   const handleGetProducts = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/products");
+      setProductsList(response.data);
+    } catch (error) {
+      console.error("Error getting products:", error);
+    }
+  };
 
-    await axios.get("http://localhost:3000/products").then((response) => { console.log(response.data) })
+  const handleOnSubmit = async (evt) => {
+    evt.preventDefault();
+    try {
+      // Submit the form data
+      await axios.post("http://localhost:3000/addProduct", formData);
+      setResponseData("Product successfully added!"); // Update responseData on success
+      setFormData({
+        id: "",
+        productName: "",
+        brand: "",
+        quantity: "",
+        image: "",
+        price: "",
+      });
+      // Optionally, you can also refresh the product list by calling handleGetProducts();
+    } catch (error) {
+      console.error("Error posting product:", error);
+      setResponseData("Error adding product. Please try again."); // Update responseData on error
+    }
   };
 
 
-// post products
-const handlePostProduct = () => {
-  const postProduct = {
-    id: product.id,
-    productName: product.productName,
-    quantity: product.quantity,
-    image: product.image,
-    price: product.price,
+  const handlePostProduct = async () => {
+    try {
+      const response = await axios.post("http://localhost:3000/addProduct", formData);
+      setProductsList((prevProducts) => [...prevProducts, response.data]);
+    } catch (error) {
+      console.error("Error posting product:", error);
+    }
   };
 
-  axios
-    .post("http://localhost:3000/addProduct", postProduct)
-    .then((response) => {
-      setResponseData(<p>{response.data}</p>);
-      // Handle the response or perform additional actions if needed
-    })
-  
-// adding to cart
   const handleAddToCart = (item) => {
-    setCartList((prevList) => {
-      console.log(cartList);
-      return [...prevList, { ...item, id: crypto.randomUUID() }];
-    });
+    setCartList((prevList) => [...prevList, { ...item, id: uuidv4() }]);
   };
 
-// Onchange Handler
-const handleOnChange = (evt) => {
-  const fieldName = evt.target.name;
-  const fieldValue = evt.target.value;
+  const handleOnChange = (evt) => {
+    const fieldName = evt.target.name;
+    const fieldValue = evt.target.value;
 
-  setFormData((prevData) => ({
-    ...prevData,
-    id: crypto.randomUUID(),
-    [fieldName]: fieldValue,
-  }));
-};
+    setFormData((prevData) => ({
+      ...prevData,
+      id: uuidv4(),
+      [fieldName]: fieldValue,
+    }));
+  };
 
-
-// emptying cart
   const handleEmptyCart = () => {
     setCartList([]);
   };
 
   const handleRemoveItem = (id) => {
-    setCartList((prevList) => {
-      return prevList.filter((i) => i.id !== id);
-    });
+    setCartList((prevList) => prevList.filter((i) => i.id !== id));
   };
 
   return (
     <>
       <h1>Groceries App</h1>
-      <InventoryForm formData = {formData} handleOnChange={handleOnChange} handleOnSubmit = {
-        handlePostProduct
-      }/> 
+      <InventoryForm formData={formData} handleOnChange={handleOnChange} handleOnSubmit={handleOnSubmit} />
+      <p>{responseData}</p> {/* Render responseData */}
       <div className="GroceriesApp-Container">
-        <InventoryCard list={products} onClick={handleAddToCart} />
-        <CartList
-          cartList={cartList}
-          onClickEmpty={handleEmptyCart}
-          onClickRemove={handleRemoveItem}
-        />
+        <InventoryCard list={productsList} onClick={handleAddToCart} />
+        <CartList cartList={cartList} onClickEmpty={handleEmptyCart} onClickRemove={handleRemoveItem} />
       </div>
     </>
   );
