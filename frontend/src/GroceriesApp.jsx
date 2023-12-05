@@ -31,7 +31,7 @@ export default function GroceriesApp() {
   };
 
   const handleOnSubmit = async (evt) => {
-    evt.preventDefault();
+    evt.preventDefault;
     try {
       // Submit the form data
       await axios.post("http://localhost:3000/addProduct", formData);
