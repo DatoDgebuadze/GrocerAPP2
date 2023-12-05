@@ -83,7 +83,7 @@ server.delete("/product/:id", async (request, response) => {
     }
 });
 
-server.patch("/product/:id", (request, response) => {
+server.patch("/product/:id", async (request, response) => {
     const { id } = request.params;
    const patchProduct = await Product.updateOne({
     _id: new mongoose.Types.ObjectId(id),

@@ -20,7 +20,7 @@ export default function InventoryForm({ formData, handleOnChange, handleOnSubmit
                         name="productName"
                         id="productName"
                         onChange={handleOnChange}
-                        defaultValue={formData.productName}
+                        value={formData.productName}
                         {...register('productName', { required: 'Product Name is required' })}
                     />
                     {errors.productName && <p>{errors.productName.message}</p>}
