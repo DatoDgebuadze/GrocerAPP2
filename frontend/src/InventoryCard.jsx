@@ -1,4 +1,4 @@
-export default function InventoryCard({ list, onClick }) {
+export default function InventoryCard({ list, onClick, handleOnDelete }) {
   return (
     <div className="Inventory-Container">
       {list.map((l) => (
@@ -20,6 +20,10 @@ export default function InventoryCard({ list, onClick }) {
             </div>
           </div> */}
           <button onClick={() => onClick(l)}>Add to cart</button>
+          <div>
+            <button onClick={() => handleOnDelete()}>delete</button>
+
+          </div>
         </div>
       ))}
     </div>
